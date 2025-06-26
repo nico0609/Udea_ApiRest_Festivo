@@ -11,7 +11,7 @@ import festivos.api.core.dominio.entidades.Festivo;
 public interface IFestivoServicio {
 
     List<Festivo> listar();
-    
+    List<Festivo> ListarPorAño(int año);
     boolean validar(LocalDate fecha);
 
 

@@ -27,7 +27,6 @@ public class Festivo {
     private int mes;
     @Column(name = "diaspascua")
     private int diaspascua;
-    @Id
     @ManyToOne
     @JoinColumn(name = "idtipo", referencedColumnName = "id", nullable = false)
     private Tipo tipo;
@@ -79,15 +78,15 @@ public class Festivo {
         return diaspascua;
     }
 
-    public void setDiasPascuas(int diaspascua) {
+    public void setDiasPascua(int diaspascua) {
         this.diaspascua = diaspascua;
     }
 
-    public Tipo getPais() {
+    public Tipo getTipo() {
         return tipo;
     }
 
-    public void setPais(Tipo tipo) {
+    public void setTipo(Tipo tipo) {
         this.tipo = tipo;
     }
     

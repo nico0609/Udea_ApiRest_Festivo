@@ -1,6 +1,8 @@
 package festivos.api.aplicacion.servicios;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ public class FestivoServicio implements IFestivoServicio {
     public List<Festivo> listar() {
         return repositorio.findAll();
     }
+
     public static LocalDate getInicioSemanaSanta(int año) {
         int a = año % 19;
         int b = año % 4;
@@ -36,9 +39,90 @@ public class FestivoServicio implements IFestivoServicio {
         }
         return LocalDate.of(año, mes, dia);
     }
-    @Override
-    public boolean validar(LocalDate fecha) {
-        
+
+    public static LocalDate siguienteLunes(LocalDate fecha) {
+        DayOfWeek diaSemana = fecha.getDayOfWeek();
+        if (diaSemana != DayOfWeek.MONDAY) {
+            return fecha.plusDays(8 - diaSemana.getValue());
+        }
+        return fecha;
     }
 
+    public static LocalDate agregarDias(LocalDate fecha, int dias) {
+        return fecha.plusDays(dias);
+
+    }
+
+    @Override
+    public List<Festivo> ListarPorAño(int año) {
+        // Buscar festivos fijos (Tipo 1)
+        List<Festivo> FestivosDelAño = new ArrayList<>();
+        List<Festivo> festivos = repositorio.findAll();
+        for (Festivo festivo : festivos) {
+            LocalDate fechaFestivo = null;
+            if (festivo.getTipo().getId() == 1) {
+                fechaFestivo = LocalDate.of(año, festivo.getMes(), festivo.getDia());
+            }
+
+            // Festivos (Tipo 2)
+            if (festivo.getTipo().getId() == 2) {
+                fechaFestivo = siguienteLunes(LocalDate.of(año, festivo.getMes(), festivo.getDia()));
+            }
+            // Calcular Pascua
+            LocalDate domingoPascua = agregarDias(getInicioSemanaSanta(año), 7);
+            // Festivos (Tipo 3)
+            if (festivo.getTipo().getId() == 3) {
+                fechaFestivo = agregarDias(domingoPascua, festivo.getDiasPascua());
+            }
+            // Festivos (Tipo 4)
+            if (festivo.getTipo().getId() == 4) {
+                fechaFestivo = agregarDias(domingoPascua, festivo.getDiasPascua());
+                fechaFestivo = siguienteLunes(fechaFestivo);
+            }
+        }
+        return FestivosDelAño;
+    }
+
+    @Override
+    public boolean validar(LocalDate fecha) {
+        int dia = fecha.getDayOfMonth();
+        int mes = fecha.getMonthValue();
+        int año = fecha.getYear();
+        List<Festivo> festivos = repositorio.findAll();
+        for (Festivo festivo : festivos) {
+            LocalDate fechaFestivo = null;
+            if (festivo.getTipo().getId() == 1 && festivo.getDia() == dia && festivo.getMes() == mes) {
+                fechaFestivo = LocalDate.of(año, festivo.getMes(), festivo.getDia());
+                if (fechaFestivo.equals(fecha)) {
+                    return true;
+                }
+            }
+
+            // Festivos (Tipo 2)
+            if (festivo.getTipo().getId() == 2 && festivo.getDia() == dia && festivo.getMes() == mes) {
+                fechaFestivo = siguienteLunes(LocalDate.of(año, festivo.getMes(), festivo.getDia()));
+                if (fechaFestivo.equals(fecha)) {
+                    return true;
+                }
+            }
+            // Calcular Pascua
+            LocalDate domingoPascua = agregarDias(getInicioSemanaSanta(año), 7);
+            // Festivos (Tipo 3)
+            if (festivo.getTipo().getId() == 3) {
+                fechaFestivo = agregarDias(domingoPascua, festivo.getDiasPascua());
+                if (fechaFestivo.equals(fecha)) {
+                    return true;
+                }
+            }
+            // Festivos (Tipo 4)
+            if (festivo.getTipo().getId() == 4) {
+                fechaFestivo = agregarDias(domingoPascua, festivo.getDiasPascua());
+                fechaFestivo = siguienteLunes(fechaFestivo);
+                if (fechaFestivo.equals(fecha)) {
+                    return true;
+                }
+            }
+        }
+    return false;
+    }
 }
