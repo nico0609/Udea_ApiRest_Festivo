@@ -36,10 +36,7 @@ public class FestivoContolador {
     @GetMapping("/validar/{año}/{mes}/{dia}")
     public ResponseEntity<String> validar(@PathVariable int año, @PathVariable int mes, @PathVariable int dia) {
         try {
-            // Validar si la fecha es válida
             LocalDate fecha = LocalDate.of(año, mes, dia);
-
-            // Verificar si es festivo
             boolean esFestivo = servicio.validar(fecha);
             if (esFestivo) {
                 return ResponseEntity.ok("Es Festivo");
@@ -47,7 +44,6 @@ public class FestivoContolador {
                 return ResponseEntity.ok("No es Festivo");
             }
         } catch (Exception e) {
-            // Capturar excepciones por fechas inválidas
             return ResponseEntity.badRequest().body("Fecha no válida");
         }
     }
