@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import festivos.api.core.dominio.DTOs.FestivoDTO;
 import festivos.api.core.dominio.entidades.Festivo;
 import festivos.api.core.interfaces.servicios.IFestivoServicio;
 import festivos.api.infraestructura.repositorios.IFestivoRepositorio;
@@ -18,11 +19,6 @@ public class FestivoServicio implements IFestivoServicio {
 
     public FestivoServicio(IFestivoRepositorio repositorio) {
         this.repositorio = repositorio;
-    }
-
-    @Override
-    public List<Festivo> listar() {
-        return repositorio.findAll();
     }
 
     public static LocalDate getInicioSemanaSanta(int año) {
@@ -54,8 +50,8 @@ public class FestivoServicio implements IFestivoServicio {
     }
 
     @Override
-    public List<Festivo> ListarPorAño(int año) {
-        List<Festivo> festivosDelAño = new ArrayList<>();
+    public List<FestivoDTO> ListarPorAño(int año) {
+        List<FestivoDTO> festivosDelAño = new ArrayList<>();
         List<Festivo> festivos = repositorio.findAll();
         LocalDate domingoPascua = agregarDias(getInicioSemanaSanta(año), 7);
 
@@ -71,25 +67,14 @@ public class FestivoServicio implements IFestivoServicio {
             } else if (festivo.getTipo().getId() == 4) {
                 fechaFestivo = siguienteLunes(agregarDias(domingoPascua, festivo.getDiasPascua()));
             }
-
-            if (fechaFestivo != null) {
-                Festivo festivoAñoEspecifico = new Festivo();
-                festivoAñoEspecifico.setId(festivo.getId());
-                festivoAñoEspecifico.setNombre(festivo.getNombre());
-                festivoAñoEspecifico.setDia(fechaFestivo.getDayOfMonth());
-                festivoAñoEspecifico.setMes(fechaFestivo.getMonthValue());
-                festivoAñoEspecifico.setTipo(festivo.getTipo());
-                festivoAñoEspecifico.setDiasPascua(festivo.getDiasPascua());
-
-                festivosDelAño.add(festivoAñoEspecifico);
-            }
+            festivosDelAño.add(new FestivoDTO(festivo.getNombre(), fechaFestivo));
         }
 
         return festivosDelAño;
     }
 
     @Override
-    public boolean validar(LocalDate fecha) {
+    public boolean verificar(LocalDate fecha) {
         int dia = fecha.getDayOfMonth();
         int mes = fecha.getMonthValue();
         int año = fecha.getYear();
